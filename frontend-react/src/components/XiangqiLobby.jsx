@@ -11,6 +11,7 @@ import {
   History,
   Loader2,
   Lock,
+  PenTool,
   Percent,
   Plus,
   RefreshCw,
@@ -56,12 +57,31 @@ export function XiangqiLobby({
 
   // Create Room Form State
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [customRoomName, setCustomRoomName] = useState('');
   const [customBet, setCustomBet] = useState(10000);
-  const [preferredSide, setPreferredSide] = useState('red'); // 'red', 'black', 'auto'
   const [timeLimit, setTimeLimit] = useState(600); // 300, 600, 900
   const [moveTimeLimit, setMoveTimeLimit] = useState(60);
   const [creating, setCreating] = useState(false);
+
+  const RANDOM_ROOM_TITLES = [
+    'Kỳ Đài Thượng Đỉnh',
+    'Phong Vân Kỳ Hội',
+    'Long Hổ Tranh Đấu',
+    'Thanh Phong Luận Cờ',
+    'Kỳ Nghệ Đối Quyết',
+    'Bách Chiến Kỳ Đài',
+    'Ngọa Hổ Tàng Long',
+    'Hào Kiệt Tương Phùng',
+    'Tiếu Ngạo Kỳ Đàn',
+    'Vô Danh Kỳ Quán',
+    'Thiên Hạ Đệ Nhất Bàn',
+    'Anh Hùng Tương Hội',
+  ];
+
+  const getRandomRoomTitle = () => {
+    const title = RANDOM_ROOM_TITLES[Math.floor(Math.random() * RANDOM_ROOM_TITLES.length)];
+    const num = Math.floor(100 + Math.random() * 900);
+    return `${title} #${num}`;
+  };
 
   // Filter logic
   const filteredRooms = onlineRooms.filter((rm) => {
@@ -114,8 +134,8 @@ export function XiangqiLobby({
     setCreating(true);
     try {
       await onCreateRoom({
-        roomName: customRoomName.trim() || `Kỳ Đài của ${currentUser?.username || playerName}`,
-        preferredSide,
+        roomName: getRandomRoomTitle(),
+        preferredSide: 'red',
         betCoins: customBet,
         timeLimitSeconds: timeLimit,
         moveTimeLimitSeconds: moveTimeLimit,
@@ -323,7 +343,7 @@ export function XiangqiLobby({
 
       {/* Chế độ chơi khác: Luyện tập với Bot, Cờ Thế */}
       {onSelectMode && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div
             onClick={() => onSelectMode('ai')}
             className="p-3.5 rounded-2xl bg-[#0d2218]/80 hover:bg-[#133022] border border-[#5ec485]/30 hover:border-[#5ec485]/70 transition-all cursor-pointer flex items-center gap-3 group shadow"
@@ -358,6 +378,24 @@ export function XiangqiLobby({
               </div>
             </div>
             <span className="text-xs text-[#f472b6] font-bold group-hover:translate-x-1 transition-transform">→</span>
+          </div>
+
+          <div
+            onClick={() => onSelectMode('editor')}
+            className="p-3.5 rounded-2xl bg-[#0d2218]/80 hover:bg-[#133022] border border-[#fbbf24]/30 hover:border-[#fbbf24]/70 transition-all cursor-pointer flex items-center gap-3 group shadow"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#382b13] text-[#fbbf24] flex items-center justify-center group-hover:scale-105 transition-transform">
+              <PenTool className="w-5 h-5 text-[#fbbf24]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-bold text-[#e8f8ee] group-hover:text-[#fbbf24] transition-colors">
+                Xếp Cờ Thế
+              </div>
+              <div className="text-[11px] text-[#a7b5ab] truncate">
+                Tự do bày cờ, xuất nhập FEN & chơi thử với AI
+              </div>
+            </div>
+            <span className="text-xs text-[#fbbf24] font-bold group-hover:translate-x-1 transition-transform">→</span>
           </div>
         </div>
       )}
@@ -654,18 +692,14 @@ export function XiangqiLobby({
             </div>
 
             <form onSubmit={handleCreateSubmit} className="space-y-4">
-              {/* Room Name */}
-              <div>
-                <label className="block text-xs font-semibold text-[#c2baa3] mb-1">
-                  Tên bàn cờ:
-                </label>
-                <input
-                  type="text"
-                  value={customRoomName}
-                  onChange={(e) => setCustomRoomName(e.target.value)}
-                  placeholder={`Kỳ Đài của ${currentUser?.username || playerName}`}
-                  className="w-full px-3 py-2 rounded-xl bg-black/45 border border-white/15 text-xs text-white focus:outline-none focus:border-[#5ec485]"
-                />
+              {/* Host Default Red & Auto-swap note */}
+              <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/30 flex items-center gap-2.5 text-xs text-amber-200">
+                <span className="w-8 h-8 rounded-full bg-red-900 border border-red-500 flex items-center justify-center font-bold text-red-200 shrink-0">
+                  帥
+                </span>
+                <span className="leading-snug">
+                  Chủ bàn mặc định cầm <strong>Quân Đỏ (Đi Tiên)</strong>. Sau mỗi ván đấu, hai bên sẽ tự động đổi bên cờ <strong>Đỏ ⇄ Đen</strong>.
+                </span>
               </div>
 
               {/* Stake Selection */}
@@ -697,33 +731,6 @@ export function XiangqiLobby({
                       </button>
                     );
                   })}
-                </div>
-              </div>
-
-              {/* Preferred Side */}
-              <div>
-                <label className="block text-xs font-semibold text-[#c2baa3] mb-1.5">
-                  Chọn vị trí ban đầu:
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'red', label: 'Quân Đỏ (Tiên)', color: 'text-red-400' },
-                    { id: 'black', label: 'Quân Đen (Hậu)', color: 'text-gray-300' },
-                    { id: 'auto', label: 'Ngẫu nhiên', color: 'text-emerald-400' },
-                  ].map((s) => (
-                    <button
-                      type="button"
-                      key={s.id}
-                      onClick={() => setPreferredSide(s.id)}
-                      className={`p-2 rounded-xl text-xs font-bold border transition cursor-pointer ${
-                        preferredSide === s.id
-                          ? 'bg-[#25593f] text-white border-[#5ec485]'
-                          : 'bg-black/30 text-[#c2baa3] border-white/10 hover:bg-white/5'
-                      }`}
-                    >
-                      <span className={s.color}>{s.label}</span>
-                    </button>
-                  ))}
                 </div>
               </div>
 

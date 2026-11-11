@@ -11,6 +11,7 @@ import {
   LogIn,
   LogOut,
   MessageSquare,
+  PenTool,
   Users,
   Volume2,
   VolumeX,
@@ -28,6 +29,7 @@ export function TopNavBar({
   onSelectLobby,
   onSelectAi,
   onSelectPuzzle,
+  onSelectEditor,
   handleOpenRoomChat,
   roomChatUnread = 0,
   onOpenQuickMatch,
@@ -118,6 +120,18 @@ export function TopNavBar({
             >
               <Compass className="w-4 h-4 text-[#f472b6]" />
               <span>Cờ Thế</span>
+            </button>
+
+            <button
+              onClick={onSelectEditor}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                pathname === '/editor'
+                  ? 'bg-[#25593f] text-[#e8f8ee] shadow border border-[#5ec485]/50'
+                  : 'text-[#c2baa3] hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <PenTool className="w-4 h-4 text-[#fbbf24]" />
+              <span>Xếp Cờ Thế</span>
             </button>
           </nav>
         )}

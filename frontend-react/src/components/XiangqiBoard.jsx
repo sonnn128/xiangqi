@@ -22,7 +22,7 @@ const MARKER_POSITIONS = [
   [6, 8],
 ];
 
-function PieceToken({ piece, isSelected, showViLabels }) {
+export function PieceToken({ piece, isSelected, showViLabels }) {
   const isRed = piece.side === 'red';
   return (
     <div
@@ -138,7 +138,8 @@ function BoardBanner({ kind }) {
 export function XiangqiBoard({
   board,
   selectedPos,
-  legalMoves,
+  legalMoves = [],
+  placementDots = [],
   lastMove,
   hintMove,
   flipped,
@@ -149,6 +150,7 @@ export function XiangqiBoard({
   winReason,
   mySide,
   onSquareClick,
+  onSquareRightClick,
   children,
 }) {
   const CELL = 64;
@@ -530,6 +532,9 @@ export function XiangqiBoard({
               const isLegalTarget = legalMoves.some(
                 (m) => m.row === r && m.col === c
               );
+              const isPlacementDot = placementDots.some(
+                (d) => d.row === r && d.col === c
+              );
               const isCheckedKing =
                 checkedKing?.row === r && checkedKing?.col === c;
 
@@ -537,6 +542,12 @@ export function XiangqiBoard({
                 <div
                   key={`cell-${r}-${c}`}
                   onClick={() => onSquareClick(r, c)}
+                  onContextMenu={(e) => {
+                    if (onSquareRightClick) {
+                      e.preventDefault();
+                      onSquareRightClick(r, c);
+                    }
+                  }}
                   className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-pointer"
                   style={{
                     left: `${leftPct}%`,
@@ -576,6 +587,14 @@ export function XiangqiBoard({
                         border: '2px solid var(--move-dot)',
                       }}
                     />
+                  )}
+
+                  {isPlacementDot && !piece && (
+                    <div className="w-5 h-5 rounded-full border-2 border-red-500/85 bg-red-500/25 shadow-[0_0_10px_rgba(239,68,68,0.7)] animate-pulse pointer-events-none" />
+                  )}
+
+                  {isPlacementDot && piece && (
+                    <div className="absolute w-[92%] h-[92%] rounded-full border-2 border-red-500/80 pointer-events-none shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
                   )}
                 </div>
               );

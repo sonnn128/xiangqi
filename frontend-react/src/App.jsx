@@ -22,6 +22,7 @@ import OnlineReadyOverlay from './components/OnlineReadyOverlay.jsx';
 import PostMatchOverlay from './components/PostMatchOverlay.jsx';
 import { RoomChatDrawer } from './components/RoomChatDrawer.jsx';
 import { PlayerProfileModal } from './components/PlayerProfileModal.jsx';
+import { BoardEditor } from './components/BoardEditor.jsx';
 import {
   INITIAL_FEN,
   PIECE_CHARS,
@@ -84,6 +85,7 @@ export default function App() {
       if (p === '/ai') return 'ai';
       if (p === '/local') return 'local';
       if (p === '/puzzle') return 'puzzle';
+      if (p === '/editor') return 'editor';
       if (p.startsWith('/online')) return 'online';
       if (p === '/' || p === '/lobby') return 'lobby';
     }
@@ -211,10 +213,12 @@ export default function App() {
   const postMatchTimerRef = useRef(null);
 
   const isLobbyView =
-    pathname === '/' ||
-    pathname === '/lobby' ||
-    (pathname === '/online' && !currentRoom) ||
-    mode === 'lobby';
+    (pathname === '/' ||
+      pathname === '/lobby' ||
+      (pathname === '/online' && !currentRoom) ||
+      mode === 'lobby') &&
+    pathname !== '/editor' &&
+    mode !== 'editor';
 
   // Khi ở Sảnh chính (Lobby), không bao giờ lưu trạng thái kết thúc hay đếm ngược
   useEffect(() => {
@@ -335,6 +339,8 @@ export default function App() {
       setMode('local');
     } else if (pathname === '/puzzle') {
       setMode('puzzle');
+    } else if (pathname === '/editor') {
+      setMode('editor');
     } else if (pathname === '/' || pathname === '/lobby') {
       setMode('lobby');
     } else if (pathname === '/online') {
@@ -541,6 +547,15 @@ const syncFromOnlineRoom = (room) => {
   }
 
   setCurrentRoom(room);
+  const mySide =
+    room.redPlayer === username
+      ? 'red'
+      : room.blackPlayer === username
+        ? 'black'
+        : 'spectator';
+  setMyOnlineSide(mySide);
+  setFlipped(mySide === 'black');
+
   const roomTimeLimit = Number(room?.timeLimitSeconds) || 600;
   const isRoomInit =
     !currentRoom ||
@@ -694,6 +709,21 @@ const loadBoardFromFen = (fen, customLastMove = null) => {
   );
   setRedTime(600);
   setBlackTime(600);
+};
+
+const handlePlayCustomFenWithAi = (customFen, startingTurn = 'red') => {
+  loadBoardFromFen(customFen);
+  setTurn(startingTurn);
+  setPlayerSide(startingTurn);
+  setFlipped(startingTurn === 'black');
+  setMode('ai');
+  navigate('/ai');
+  soundFX.playBattleStart();
+  showToast({
+    type: 'info',
+    title: 'LUYỆN TẬP CỜ THẾ VỚI BOT',
+    message: `Đã nạp thế cờ tùy chỉnh. Bạn cầm quân ${startingTurn === 'red' ? 'ĐỎ' : 'ĐEN'}.`,
+  });
 };
 
 const loadScreenshotDemo = () => {
@@ -978,6 +1008,11 @@ const handleNewGame = async () => {
   if (mode === 'puzzle') {
     loadBoardFromFen(activePuzzle.fen);
     return;
+  }
+  if (mode === 'ai' || mode === 'local') {
+    const nextSide = playerSide === 'red' ? 'black' : 'red';
+    setPlayerSide(nextSide);
+    setFlipped(nextSide === 'black');
   }
   loadBoardFromFen(INITIAL_FEN);
 };
@@ -1537,6 +1572,11 @@ return (
         setActivePuzzle(PUZZLE_PRESETS[0]);
         loadBoardFromFen(PUZZLE_PRESETS[0].fen);
       }}
+      onSelectEditor={() => {
+        setCurrentRoom(null);
+        navigate('/editor');
+        setMode('editor');
+      }}
       handleOpenRoomChat={handleOpenRoomChat}
       roomChatUnread={roomChatUnread}
       onOpenQuickMatch={() => setShowQuickMatchModal(true)}
@@ -1608,7 +1648,7 @@ return (
             }
           }}
           onKickPlayer={handleKickPlayer}
-          onCreateRoom={async ({ roomName, preferredSide: sidePref, betCoins, timeLimitSeconds, moveTimeLimitSeconds }) => {
+          onCreateRoom={async ({ roomName, betCoins, timeLimitSeconds, moveTimeLimitSeconds }) => {
             if (!requireLogin()) return;
 
             const creator = currentUser?.username || playerName;
@@ -1617,13 +1657,13 @@ return (
               const rm = await createOnlineRoom(
                 creator,
                 roomName,
-                sidePref === 'auto' ? 'red' : sidePref,
+                'red',
                 betCoins,
                 timeLimitSeconds,
                 moveTimeLimitSeconds
               );
-              setMyOnlineSide(sidePref === 'black' ? 'black' : 'red');
-              setFlipped(sidePref === 'black');
+              setMyOnlineSide('red');
+              setFlipped(false);
               syncFromOnlineRoom(rm);
               navigate(`/online/${rm.roomId}`);
             } catch {
@@ -1652,6 +1692,10 @@ return (
               setActivePuzzle(PUZZLE_PRESETS[0]);
               loadBoardFromFen(PUZZLE_PRESETS[0].fen);
               soundFX.playBattleStart();
+            } else if (target === 'editor') {
+              navigate('/editor');
+              setMode('editor');
+              soundFX.playSelect();
             } else if (target === 'online') {
               navigate('/');
             }
@@ -1668,6 +1712,13 @@ return (
             setChatInitialTab('friends');
             setIsGlobalChatOpen(true);
           }}
+        />
+      </main>
+    ) : mode === 'editor' ? (
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center w-full">
+        <BoardEditor
+          onPlayWithAi={handlePlayCustomFenWithAi}
+          showToast={showToast}
         />
       </main>
     ) : (

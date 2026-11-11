@@ -146,18 +146,34 @@ public class XiangqiService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng: " + roomId));
     }
 
+    private static final String[] RANDOM_TITLES = {
+        "Kỳ Đài Thượng Đỉnh", "Phong Vân Kỳ Hội", "Long Hổ Tranh Đấu",
+        "Thanh Phong Luận Cờ", "Kỳ Nghệ Đối Quyết", "Bách Chiến Kỳ Đài",
+        "Ngọa Hổ Tàng Long", "Hào Kiệt Tương Phùng", "Tiếu Ngạo Kỳ Đàn",
+        "Vô Danh Kỳ Quán", "Thiên Hạ Đệ Nhất Bàn", "Anh Hùng Tương Hội"
+    };
+
+    private String getRandomRoomName(String player) {
+        String title = RANDOM_TITLES[new Random().nextInt(RANDOM_TITLES.length)];
+        int code = 100 + new Random().nextInt(900);
+        return title + " #" + code;
+    }
+
     public GameRoom createRoom(XiangqiRoomActionRequest req) {
         releasePlayerFromOtherRooms(req.getPlayerName(), null);
         String roomId = generateRoomCode();
-        String side = req.getPreferredSide() != null ? req.getPreferredSide().toLowerCase() : "red";
-        String red = "black".equals(side) ? null : req.getPlayerName();
-        String black = "black".equals(side) ? req.getPlayerName() : null;
+        // Mặc định chủ phòng cầm quân Đỏ khi tạo bàn
+        String red = req.getPlayerName();
+        String black = null;
+
+        String name = req.getRoomName();
+        if (name == null || name.trim().isBlank()) {
+            name = getRandomRoomName(req.getPlayerName());
+        }
 
         GameRoom room = GameRoom.builder()
                 .roomId(roomId)
-                .roomName(req.getRoomName() != null && !req.getRoomName().isBlank()
-                        ? req.getRoomName()
-                        : "Kỳ đài của " + req.getPlayerName())
+                .roomName(name)
                 .hostPlayer(req.getPlayerName())
                 .redPlayer(red)
                 .blackPlayer(black)
@@ -432,6 +448,12 @@ public class XiangqiService {
 
     public GameRoom resetRoom(String roomId) {
         GameRoom room = getRoom(roomId);
+        // Sau mỗi trận đấu, tự động đổi bên cờ (Đỏ ⇄ Đen)
+        if (room.getRedPlayer() != null && room.getBlackPlayer() != null) {
+            String temp = room.getRedPlayer();
+            room.setRedPlayer(room.getBlackPlayer());
+            room.setBlackPlayer(temp);
+        }
         room.setFen(INITIAL_FEN);
         room.setCurrentTurn("red");
         room.setMoveHistoryJson("[]");
