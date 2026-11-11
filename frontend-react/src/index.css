@@ -1,0 +1,372 @@
+@import "tailwindcss";
+
+:root {
+  --board-bg: #143224;
+  --board-line: #7f7c54;
+  --river-text: #8e8a5e;
+  --piece-bg-light: #f3dfc0;
+  --piece-bg-mid: #e2c089;
+  --piece-bg-edge: #b8894c;
+  --piece-ring: #5a3219;
+  --piece-red: #b1160e;
+  --piece-black: #171412;
+  --move-dot: rgba(104, 198, 136, 0.40);
+  --xq-slide-ms: 460ms;
+}
+
+@layer base {
+  body {
+    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 32, 24, 0.4);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(132, 129, 86, 0.45);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(132, 129, 86, 0.75);
+}
+
+/* Khung viền và ánh sáng bàn cờ chuẩn hiệu ứng 3D chỗ sáng chỗ trầm */
+.xq-board-frame {
+  box-shadow:
+    0 24px 60px -10px rgba(0, 0, 0, 0.88),
+    0 8px 24px -4px rgba(0, 0, 0, 0.65),
+    inset 0 1px 2px rgba(180, 240, 210, 0.28),
+    inset 0 0 50px rgba(2, 12, 7, 0.80);
+  border: 1px solid rgba(135, 195, 160, 0.20);
+}
+
+/* Wooden xiangqi disc */
+.xq-piece {
+  position: relative;
+  width: 90%;
+  height: 90%;
+  border-radius: 50%;
+  container-type: inline-size;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(
+    circle at 44% 38%,
+    var(--piece-bg-light) 0%,
+    var(--piece-bg-mid) 62%,
+    var(--piece-bg-edge) 100%
+  );
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.52),
+    0 1px 1.5px rgba(255, 248, 230, 0.5) inset,
+    0 -2.5px 4px rgba(72, 40, 12, 0.55) inset;
+  transition: transform 160ms ease, filter 160ms ease;
+}
+
+.xq-piece-selected {
+  transform: scale(1.07);
+  filter: brightness(1.06);
+}
+
+.xq-piece-rim {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: none;
+}
+
+.xq-piece-face {
+  position: relative;
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1.4px solid var(--piece-ring);
+}
+
+.xq-piece-char {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  line-height: 1;
+  font-family: 'LXGW WenKai TC', 'KaiTi', '楷体', 'STKaiti', 'DFKai-SB', 'BiauKai', 'Noto Serif TC', serif;
+  font-weight: 800;
+  font-size: 45cqi;
+  letter-spacing: -0.04em;
+  text-align: center;
+  transform: translateY(-0.5px);
+  -webkit-text-stroke: 0.42px currentColor;
+  text-shadow: 0 0.8px 0 rgba(255, 248, 230, 0.45);
+}
+
+/* Breathing / pulsing animation for move brackets (phóng to thu nhỏ nhấp nhổm) */
+@keyframes xq-bracket-bounce {
+  0%, 100% {
+    transform: scale(0.96);
+    opacity: 0.82;
+  }
+  50% {
+    transform: scale(1.10);
+    opacity: 1;
+    filter: drop-shadow(0 0 4.5px rgba(103, 198, 135, 0.9));
+  }
+}
+
+.xq-bracket-pulse {
+  animation: xq-bracket-bounce 1.25s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.xq-piece-red .xq-piece-char {
+  color: var(--piece-red);
+}
+
+.xq-piece-black .xq-piece-char {
+  color: var(--piece-black);
+}
+
+.xq-check-ring {
+  position: absolute;
+  inset: -6%;
+  border-radius: 50%;
+  border: 2.4px solid #c0392b;
+  box-shadow: 0 0 0 1px rgba(192, 57, 43, 0.18);
+  pointer-events: none;
+  z-index: 6;
+  animation: xq-check-ring-pulse 1.15s ease-in-out infinite;
+}
+
+@keyframes xq-check-ring-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.82;
+  }
+}
+
+.xq-sliding-piece {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: left, top, transform, filter;
+  transition:
+    left var(--xq-slide-ms) cubic-bezier(0.22, 1, 0.36, 1),
+    top var(--xq-slide-ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.xq-sliding-piece.is-flying {
+  animation: xq-piece-fly var(--xq-slide-ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.xq-sliding-piece.is-flying .xq-piece {
+  filter: brightness(1.04);
+}
+
+@keyframes xq-piece-fly {
+  0% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.38));
+  }
+  28% {
+    transform: translate(-50%, -50%) scale(1.2) rotate(-5deg);
+    filter: drop-shadow(0 16px 12px rgba(0, 0, 0, 0.48));
+  }
+  72% {
+    transform: translate(-50%, -50%) scale(1.1) rotate(3deg);
+    filter: drop-shadow(0 10px 8px rgba(0, 0, 0, 0.42));
+  }
+  88% {
+    transform: translate(-50%, -50%) scale(0.96) rotate(-1deg);
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.4));
+  }
+}
+
+.xq-land-ripple {
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  border: 2px solid rgba(245, 220, 160, 0.7);
+  pointer-events: none;
+  z-index: 8;
+  animation: xq-land-ripple 460ms ease-out forwards;
+}
+
+@keyframes xq-land-ripple {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
+.xq-banner {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  z-index: 55;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 95%;
+  text-align: center;
+}
+
+.xq-banner-check {
+  animation: xq-banner-in 460ms cubic-bezier(0.18, 1.25, 0.35, 1.05) both;
+}
+
+.xq-banner-mate {
+  animation: xq-banner-mate-in 520ms cubic-bezier(0.18, 1.35, 0.32, 1.05) both;
+}
+
+/* Chấn động rung bàn cờ khi cú dập RẦM xảy ra */
+.xq-board-tremor {
+  animation: xq-slam-shake 440ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes xq-slam-shake {
+  0% { transform: scale(1); }
+  22% { transform: scale(1.022) translateY(2.5px); }
+  45% { transform: scale(0.988) translateY(-2.5px); }
+  68% { transform: scale(1.01) translateY(1.2px); }
+  85% { transform: scale(0.996) translateY(-0.5px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+/* Chữ Chiếu chính */
+.xq-check-main-text {
+  filter: drop-shadow(0 0 12px rgba(255, 40, 40, 0.55)) drop-shadow(0 6px 18px rgba(0,0,0,0.9));
+}
+
+/* Chữ Tuyệt Sát chính phát sáng rực rỡ */
+.xq-mate-main-text {
+  filter: drop-shadow(0 0 18px rgba(255, 30, 30, 0.85)) drop-shadow(0 8px 24px rgba(0, 0, 0, 0.98));
+  animation: xq-mate-pulse 1.8s ease-in-out infinite 520ms;
+}
+
+@keyframes xq-mate-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 15px rgba(255, 30, 30, 0.75)) drop-shadow(0 8px 24px rgba(0, 0, 0, 0.98));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 28px rgba(255, 60, 60, 1)) drop-shadow(0 10px 30px rgba(0, 0, 0, 1));
+    transform: scale(1.035);
+  }
+}
+
+/* Sóng chữ Tuyệt Sát loang mở rộng trong khoảng ~3s rồi dừng lại */
+.xq-mate-ripple-1 {
+  animation: xq-ripple-expand 1.4s cubic-bezier(0.1, 0.6, 0.2, 1) 2 150ms forwards;
+}
+
+/* Sóng chữ Tuyệt Sát loang mở rộng tầng 2 */
+.xq-mate-ripple-2 {
+  animation: xq-ripple-expand 1.4s cubic-bezier(0.1, 0.6, 0.2, 1) 2 550ms forwards;
+}
+
+@keyframes xq-ripple-expand {
+  0% {
+    transform: scale(1);
+    opacity: 0.95;
+    filter: drop-shadow(0 0 12px #ff2a2a) blur(0px);
+  }
+  50% {
+    opacity: 0.45;
+    filter: drop-shadow(0 0 24px #ff1a1a) blur(4px);
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+    filter: drop-shadow(0 0 45px #ff0000) blur(9px);
+  }
+}
+
+@keyframes xq-banner-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.10);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes xq-banner-mate-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.3);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes toast-slide-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-toast-slide-down {
+  animation: toast-slide-down 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes toast-progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-toast-progress {
+  animation-name: toast-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
