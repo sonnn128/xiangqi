@@ -46,6 +46,7 @@ export function GlobalChatDrawer({
   const [sending, setSending] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
   // Friends & Direct Chat State
   const [friends, setFriends] = useState([]);
@@ -57,6 +58,18 @@ export function GlobalChatDrawer({
   const [directChatInput, setDirectChatInput] = useState('');
   const [directChatSending, setDirectChatSending] = useState(false);
   const directChatEndRef = useRef(null);
+  const directInputRef = useRef(null);
+
+  // Autofocus input when drawer opens or tab switches
+  useEffect(() => {
+    if (isOpen) {
+      if (activeTab === 'global') {
+        setTimeout(() => inputRef.current?.focus(), 120);
+      } else if (activeTab === 'friends' && selectedFriend) {
+        setTimeout(() => directInputRef.current?.focus(), 120);
+      }
+    }
+  }, [isOpen, activeTab, selectedFriend]);
 
   // Sync initial tab when drawer opens
   useEffect(() => {
@@ -193,10 +206,15 @@ export function GlobalChatDrawer({
       return;
     }
 
+    // Clear input immediately so user can type the next message right away without waiting!
+    if (!textToSend) {
+      setInput('');
+    }
+    inputRef.current?.focus();
+
     setSending(true);
     try {
       const createdMsg = await postGlobalChat(currentUser.username, text, userCoins);
-      setInput('');
       if (createdMsg) {
         setMessages((prev) => {
           const exists = prev.some(
@@ -214,6 +232,7 @@ export function GlobalChatDrawer({
       // ignore
     } finally {
       setSending(false);
+      inputRef.current?.focus();
     }
   };
 
@@ -261,6 +280,9 @@ export function GlobalChatDrawer({
     const text = directChatInput.trim();
     if (!text || !selectedFriend || directChatSending) return;
 
+    setDirectChatInput('');
+    directInputRef.current?.focus();
+
     setDirectChatSending(true);
     try {
       const saved = await postDirectMessage(
@@ -268,7 +290,6 @@ export function GlobalChatDrawer({
         selectedFriend.username,
         text
       );
-      setDirectChatInput('');
       if (saved) {
         setDirectMessages((prev) => [...prev, saved]);
       }
@@ -276,6 +297,7 @@ export function GlobalChatDrawer({
       // ignore
     } finally {
       setDirectChatSending(false);
+      directInputRef.current?.focus();
     }
   };
 
@@ -458,30 +480,41 @@ export function GlobalChatDrawer({
               </div>
 
               {/* Chat Input */}
-              <div className="p-2.5 bg-[#142d20] border-t border-[#848156]/30 flex items-center gap-2">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendGlobal();
+                }}
+                className="p-2.5 bg-[#142d20] border-t border-[#848156]/30 flex items-center gap-2"
+              >
                 <input
+                  ref={inputRef}
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSendGlobal();
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendGlobal();
+                    }
                   }}
                   placeholder={
                     currentUser
                       ? 'Gửi tin nhắn lên kênh thế giới...'
                       : 'Đăng nhập để tham gia chat thế giới...'
                   }
-                  disabled={!currentUser || sending}
+                  disabled={!currentUser}
                   className="flex-1 px-3 py-2 rounded-xl bg-black/45 border border-white/15 text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-[#5ec485] disabled:opacity-50"
                 />
                 <button
-                  onClick={() => handleSendGlobal()}
+                  type="submit"
                   disabled={!currentUser || !input.trim() || sending}
                   className="p-2 rounded-xl bg-[#25593f] hover:bg-[#2f6f4f] disabled:opacity-40 text-white transition cursor-pointer"
+                  title="Gửi tin nhắn"
                 >
                   <Send className="w-4 h-4" />
                 </button>
-              </div>
+              </form>
             </div>
           )}
 
@@ -573,6 +606,7 @@ export function GlobalChatDrawer({
                     className="p-2.5 bg-[#142d20] border-t border-[#848156]/30 flex items-center gap-2"
                   >
                     <input
+                      ref={directInputRef}
                       type="text"
                       value={directChatInput}
                       onChange={(e) => setDirectChatInput(e.target.value)}
