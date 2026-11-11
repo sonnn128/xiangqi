@@ -108,8 +108,23 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         </div>
 
         {error && (
-          <div className="p-2.5 mb-3 rounded-lg text-xs font-medium text-red-200 bg-red-950/70 border border-red-500/40">
-            {error}
+          <div className="p-3 mb-3 rounded-xl text-xs font-medium text-red-200 bg-red-950/70 border border-red-500/40 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+            {isRegister && error.toLowerCase().includes('đã tồn tại') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setIsRegister(false);
+                }}
+                className="self-start text-[11px] font-bold text-amber-300 hover:text-white underline cursor-pointer"
+              >
+                👉 Tài khoản đã tồn tại! Bấm vào đây để chuyển sang Đăng Nhập
+              </button>
+            )}
           </div>
         )}
 
