@@ -1,0 +1,35 @@
+# server:
+#   port: 8081
+# spring:
+#   application:
+#     name: main
+#   output:
+#     ansi:
+#       enabled: ALWAYS
+
+#   datasource:
+#     url: jdbc:mysql://localhost:3306/spring_rest_api_base
+#     username: root
+#     password: root
+#     driver-class-name: com.mysql.cj.jdbc.Driver
+# #
+#     hikari:
+#       minimum-idle: 5
+#       maximum-pool-size: 10
+#       connection-timeout: 30000
+#       idle-timeout: 600000
+#       max-lifetime: 1800000
+
+#   jpa:
+#     show-sql: false
+#     hibernate:
+#       ddl-auto: update
+#     open-in-view: false
+
+#     properties:
+#       hibernate:
+#         dialect: org.hibernate.dialect.MySQL8Dialect
+
+# jwt:
+#   expirationMs: 3600000
+#   SECRET_KEY: ${JWT_SECRET_KEY:a1dae4457f142c88547a17529caec2f12c8ba2cb4ccd599aa75cfd7e5b27752f9d9167d1349a30596931fd238239d6d17fb49a8f63e27fd45cf7c49a65d3fd75}
