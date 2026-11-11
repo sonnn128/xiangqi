@@ -1464,106 +1464,107 @@ export default function App() {
       <ScenicBackground />
 
       {/* Top Navigation Bar */}
-      <header className="relative z-20 w-full px-3 sm:px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 bg-[#10261c]/85 backdrop-blur-md border-b border-[#848156]/30">
-        {currentRoom ? (
-          <button
-            onClick={handleExitRoom}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-red-950/70 hover:bg-red-900/80 border border-red-500/50 text-red-200 text-sm font-bold transition cursor-pointer"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Thoát bàn</span>
-          </button>
-        ) : (
-          <div
-            onClick={() => {
-              setCurrentRoom(null);
-              navigate('/');
-            }}
-            className="flex items-center gap-3 cursor-pointer group select-none"
-            title="Trở về Sảnh cờ chính"
-          >
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#f5e4c8] to-[#cfa978] flex items-center justify-center shadow-md border border-[#8a5a32] group-hover:scale-105 transition-transform">
-              <span
-                className="text-[#9e1c13] font-semibold text-xl leading-none"
-                style={{
-                  fontFamily: "'LXGW WenKai TC', 'KaiTi', 'Noto Serif TC', serif",
-                }}
-              >
-                帥
-              </span>
-            </div>
-            <div>
-              <h1
-                className="text-lg sm:text-xl font-bold tracking-wide text-[#f4ead5] flex items-center gap-2 group-hover:text-white transition-colors"
-                style={{ fontFamily: "'Cormorant Garamond', serif" }}
-              >
-                VÔ DANH KỲ HỮU
-              </h1>
-            </div>
-          </div>
-        )}
-
-        {/* Mode Switcher Pills */}
-        {!currentRoom && !zenMode && (
-          <nav className="flex items-center gap-1 sm:gap-1.5 bg-[#0c1d15]/90 p-1 rounded-xl border border-[#848156]/30">
+      <header className="relative z-20 w-full px-3 sm:px-6 py-2.5 bg-[#10261c]/85 backdrop-blur-md border-b border-[#848156]/30">
+        <div className="w-full max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          {currentRoom ? (
             <button
+              onClick={handleExitRoom}
+              className="ml-2 sm:ml-6 md:ml-12 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-red-950/70 hover:bg-red-900/80 border border-red-500/50 text-red-200 text-sm font-bold transition cursor-pointer shadow-md"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Thoát bàn</span>
+            </button>
+          ) : (
+            <div
               onClick={() => {
                 setCurrentRoom(null);
                 navigate('/');
               }}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${pathname === '/' || pathname === '/lobby'
-                ? 'bg-[#25593f] text-[#e8f8ee] shadow border border-[#5ec485]/50'
-                : 'text-[#c2baa3] hover:text-white hover:bg-white/5'
-                }`}
+              className="flex items-center gap-3 cursor-pointer group select-none"
+              title="Trở về Sảnh cờ chính"
             >
-              <LayoutDashboard className="w-4 h-4 text-[#a7f3d0]" />
-              <span>Sảnh Cờ</span>
-            </button>
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#f5e4c8] to-[#cfa978] flex items-center justify-center shadow-md border border-[#8a5a32] group-hover:scale-105 transition-transform">
+                <span
+                  className="text-[#9e1c13] font-semibold text-xl leading-none"
+                  style={{
+                    fontFamily: "'LXGW WenKai TC', 'KaiTi', 'Noto Serif TC', serif",
+                  }}
+                >
+                  帥
+                </span>
+              </div>
+              <div>
+                <h1
+                  className="text-lg sm:text-xl font-bold tracking-wide text-[#f4ead5] flex items-center gap-2 group-hover:text-white transition-colors"
+                  style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                >
+                  VÔ DANH KỲ HỮU
+                </h1>
+              </div>
+            </div>
+          )}
 
+          {/* Mode Switcher Pills */}
+          {!currentRoom && !zenMode && (
+            <nav className="flex items-center gap-1 sm:gap-1.5 bg-[#0c1d15]/90 p-1 rounded-xl border border-[#848156]/30">
+              <button
+                onClick={() => {
+                  setCurrentRoom(null);
+                  navigate('/');
+                }}
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${pathname === '/' || pathname === '/lobby'
+                  ? 'bg-[#25593f] text-[#e8f8ee] shadow border border-[#5ec485]/50'
+                  : 'text-[#c2baa3] hover:text-white hover:bg-white/5'
+                  }`}
+              >
+                <LayoutDashboard className="w-4 h-4 text-[#a7f3d0]" />
+                <span>Sảnh Cờ</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  navigate('/ai');
+                  loadBoardFromFen(INITIAL_FEN);
+                }}
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${pathname === '/ai'
+                  ? 'bg-[#25593f] text-[#e8f8ee] shadow border border-[#5ec485]/50'
+                  : 'text-[#c2baa3] hover:text-white hover:bg-white/5'
+                  }`}
+              >
+                <Bot className="w-4 h-4 text-[#66c989]" />
+                <span>Luyện tập với Bot</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  navigate('/puzzle');
+                  setActivePuzzle(PUZZLE_PRESETS[0]);
+                  loadBoardFromFen(PUZZLE_PRESETS[0].fen);
+                }}
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${pathname === '/puzzle'
+                  ? 'bg-[#25593f] text-[#e8f8ee] shadow border border-[#5ec485]/50'
+                  : 'text-[#c2baa3] hover:text-white hover:bg-white/5'
+                  }`}
+              >
+                <Compass className="w-4 h-4 text-[#f472b6]" />
+                <span>Cờ Thế</span>
+              </button>
+            </nav>
+          )}
+
+          {/* User Account, Coins & Quick Play Bar */}
+          {currentRoom ? (
             <button
-              onClick={() => {
-                navigate('/ai');
-                loadBoardFromFen(INITIAL_FEN);
-              }}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${pathname === '/ai'
-                ? 'bg-[#25593f] text-[#e8f8ee] shadow border border-[#5ec485]/50'
-                : 'text-[#c2baa3] hover:text-white hover:bg-white/5'
-                }`}
+              onClick={handleOpenRoomChat}
+              className="mr-2 sm:mr-6 md:mr-12 relative flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#153124] hover:bg-[#1e4432] border border-[#5ec485]/45 text-[#bbf7d0] text-sm font-bold transition cursor-pointer shadow-md"
+              title="Mở chat trong phòng"
             >
-              <Bot className="w-4 h-4 text-[#66c989]" />
-              <span>Luyện tập với Bot</span>
+              <MessageSquare className="w-4 h-4" />
+              <span>Chat</span>
+              {roomChatUnread > 0 && <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-[#10261c]">{roomChatUnread > 9 ? '9+' : roomChatUnread}</span>}
             </button>
-
-            <button
-              onClick={() => {
-                navigate('/puzzle');
-                setActivePuzzle(PUZZLE_PRESETS[0]);
-                loadBoardFromFen(PUZZLE_PRESETS[0].fen);
-              }}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${pathname === '/puzzle'
-                ? 'bg-[#25593f] text-[#e8f8ee] shadow border border-[#5ec485]/50'
-                : 'text-[#c2baa3] hover:text-white hover:bg-white/5'
-                }`}
-            >
-              <Compass className="w-4 h-4 text-[#f472b6]" />
-              <span>Cờ Thế</span>
-            </button>
-          </nav>
-        )}
-
-        {/* User Account, Coins & Quick Play Bar */}
-        {currentRoom ? (
-          <button
-            onClick={handleOpenRoomChat}
-            className="relative flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#153124] hover:bg-[#1e4432] border border-[#5ec485]/45 text-[#bbf7d0] text-sm font-bold transition cursor-pointer"
-            title="Mở chat trong phòng"
-          >
-            <MessageSquare className="w-4 h-4" />
-            <span>Chat</span>
-            {roomChatUnread > 0 && <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-[#10261c]">{roomChatUnread > 9 ? '9+' : roomChatUnread}</span>}
-          </button>
-        ) : (
-        <div className="flex items-center gap-2">
+          ) : (
+          <div className="flex items-center gap-2">
           {/* Quick Match Lightning Button */}
           <button
             onClick={() => setShowQuickMatchModal(true)}
@@ -1686,6 +1687,7 @@ export default function App() {
           </button>
         </div>
         )}
+        </div>
       </header>
 
       {/* Main Content Area */}
@@ -2420,7 +2422,7 @@ export default function App() {
               </div>
             )}
             {mode === 'online' && currentRoom && (!currentRoom.redPlayer || !currentRoom.blackPlayer) && (
-              <div className="mb-3 w-full max-w-lg px-4 py-2.5 rounded-2xl bg-[#142f22]/95 border border-[#5ec485]/60 shadow-lg flex items-center justify-between gap-3 text-xs animate-fade-in">
+              <div className="mb-3 w-full max-w-[550px] px-4 py-2.5 rounded-2xl bg-[#142f22]/95 border border-[#5ec485]/60 shadow-lg flex items-center justify-between gap-3 text-xs animate-fade-in">
                 <div className="flex items-center gap-2 text-[#f3ead8]">
                   <Users className="w-4 h-4 text-[#8ce8b1] shrink-0" />
                   <span>
@@ -2568,9 +2570,9 @@ export default function App() {
             )}
           </section>
 
-          {/* RIGHT PANEL: Move History & Online Chat */}
+          {/* RIGHT PANEL */}
           {!zenMode && (
-            <aside className="w-full lg:w-[310px] flex flex-col gap-3 order-3">
+            <aside className={`${mode === 'online' ? 'hidden' : 'w-full lg:w-[310px] flex flex-col gap-3'} order-3`}>
             </aside>
           )}
         </main>
