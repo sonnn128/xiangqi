@@ -341,9 +341,9 @@ export function XiangqiLobby({
         </div>
       </div>
 
-      {/* Chế độ chơi khác: Luyện tập với Bot, Cờ Thế */}
+      {/* Chế độ chơi khác: Luyện tập với Bot, Xếp Cờ Thế */}
       {onSelectMode && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div
             onClick={() => onSelectMode('ai')}
             className="p-3.5 rounded-2xl bg-[#0d2218]/80 hover:bg-[#133022] border border-[#5ec485]/30 hover:border-[#5ec485]/70 transition-all cursor-pointer flex items-center gap-3 group shadow"
@@ -360,24 +360,6 @@ export function XiangqiLobby({
               </div>
             </div>
             <span className="text-xs text-[#8ce8b1] font-bold group-hover:translate-x-1 transition-transform">→</span>
-          </div>
-
-          <div
-            onClick={() => onSelectMode('puzzle')}
-            className="p-3.5 rounded-2xl bg-[#0d2218]/80 hover:bg-[#133022] border border-[#f472b6]/30 hover:border-[#f472b6]/70 transition-all cursor-pointer flex items-center gap-3 group shadow"
-          >
-            <div className="w-10 h-10 rounded-xl bg-[#331828] text-[#f472b6] flex items-center justify-center group-hover:scale-105 transition-transform">
-              <Compass className="w-5 h-5 text-[#f472b6]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-[#e8f8ee] group-hover:text-[#f472b6] transition-colors">
-                Cờ Thế Kinh Điển
-              </div>
-              <div className="text-[11px] text-[#a7b5ab] truncate">
-                Thử tài giải các thế cờ tàn hiểm hóc trứ danh
-              </div>
-            </div>
-            <span className="text-xs text-[#f472b6] font-bold group-hover:translate-x-1 transition-transform">→</span>
           </div>
 
           <div

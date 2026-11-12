@@ -1567,11 +1567,6 @@ return (
         navigate('/ai');
         loadBoardFromFen(INITIAL_FEN);
       }}
-      onSelectPuzzle={() => {
-        navigate('/puzzle');
-        setActivePuzzle(PUZZLE_PRESETS[0]);
-        loadBoardFromFen(PUZZLE_PRESETS[0].fen);
-      }}
       onSelectEditor={() => {
         setCurrentRoom(null);
         navigate('/editor');
